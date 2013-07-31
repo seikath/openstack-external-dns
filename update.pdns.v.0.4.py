@@ -127,7 +127,7 @@ query_pdns_clean = ("delete from records where content = 'None';")
 debug = False
 #debug = True
 epg_debug = False
-epg_debug = True
+# epg_debug = True
 
 if not epg_debug : print "["+str(datetime.now())+"] : Debug set to false at /home/epg/bin/epg-pdns-03/update.pdns.v.0.3.py"
 
