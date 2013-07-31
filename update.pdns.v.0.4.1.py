@@ -14,7 +14,7 @@ import socket
 import sys
 from datetime import datetime
 #import ipaddr
-
+import ConfigParser, os
 
 # CONFIGs, SQL etc ========= [ start ] 
 config_nova = {
