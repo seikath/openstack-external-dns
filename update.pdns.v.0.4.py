@@ -215,11 +215,11 @@ for (id,hostname,floating_ip) in cursor_nova:
 	)
 	query_pdns_insert_ptr_soa = (
 	"insert into records (domain_id, name, content, type,ttl,prio,last_update,change_date) "
-	"VALUES (2,'%s.in-addr.arpa','%s','SOA',120,NULL,now(),now());"
+	"VALUES (2,'%s.in-addr.arpa','%s','SOA',120,NULL,now(),unix_timestamp(now()));"
 	)
 	query_pdns_insert_ptr = (
 	"insert into records (domain_id, name, content, type,ttl,prio,last_update,change_date) "
-	"VALUES (2,'%s.in-addr.arpa','%s','PTR',120,NULL,now(),now());"
+	"VALUES (2,'%s.in-addr.arpa','%s.openstack.hi.inet','PTR',120,NULL,now(),unix_timestamp(now()));"
 	)	
 	# debug 
 	try:
