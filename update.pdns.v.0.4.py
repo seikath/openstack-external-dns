@@ -103,7 +103,6 @@ config_pdns = {
   'passwd': 'pdns_user_passwd',
   'host': '127.0.0.1',
   'db': 'pdns',
-
 }
 
 query = ("""select
@@ -131,19 +130,6 @@ epg_debug = False
 
 if not epg_debug : print "["+str(datetime.now())+"] : Debug set to false at /home/epg/bin/epg-pdns-03/update.pdns.v.0.3.py"
 
-# CONFIGs, SQL etc ========= [ end ] 
-
-#floating_ip = '10.95.158.5'
-##print ipaddr.IPv4Address('10.95.158.5/32').explode
-#reversed_fip= '.'.join(floating_ip.split('.')[::-1])
-#print '.'.join(floating_ip.split('.')[::-1]), reversed_fip
-
-
-
-#sys.exit (0)
-
-
-# initialize db conection to nova
 try:
 	cnx_nova = MySQLdb.connect(**config_nova)
 	# open nova cursor
