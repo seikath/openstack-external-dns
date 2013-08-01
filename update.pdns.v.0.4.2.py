@@ -20,7 +20,7 @@ import os
 config = ConfigParser.SafeConfigParser()
 # get the config at the db.config file in the same directory 
 config.read(os.path.dirname(os.path.abspath(__file__))+'/db.config')
-# assing the db configs
+# assign the db configs
 config_nova = dict(config.items("nova"))
 config_pdns = dict(config.items("pdns"))
 
@@ -41,7 +41,6 @@ where true
 -- and i.vm_state != 'deleted'
 and i.host is not null""")
 
-query_pdns_clean = ("delete from records where content = 'None';")
 debug = False
 #debug = True
 epg_debug = False
@@ -50,7 +49,7 @@ epg_debug = False
 if not epg_debug : print "["+str(datetime.now())+"] : Debug set to false at " + os.path.abspath(__file__)
 
 try:
-	#cnx_nova = MySQLdb.connect(**config_nova)
+	# initialize db conection to nova
 	cnx_nova = MySQLdb.connect(**config_nova)
 	# open nova cursor
 	cursor_nova = cnx_nova.cursor()
@@ -73,14 +72,6 @@ except Exception, e:
 	print "["+str(datetime.now())+"] : " + repr(e)
 	sys.exit (1)
 	
-# general clen up 
-try:
-	cursor_pdns.execute(query_pdns_clean)
-	if epg_debug : print ("["+str(datetime.now())+"] : " + "Executed : " + query_pdns_clean) 
-except MySQLdb.Error, e:
-	print "["+str(datetime.now())+"] : " + "Error %d: %s" % (e.args[0], e.args[1])
-	sys.exit (1)
-
 # clean the old records 
 for (id,hostname,floating_ip) in cursor_nova:
 	# check if the IP is not null
