@@ -14,23 +14,14 @@ import socket
 import sys
 from datetime import datetime
 import ConfigParser
-
+import os
+print os.path.basename(__file__)
 # CONFIGs, SQL etc ========= [ start ] 
 config = ConfigParser.SafeConfigParser()
+# get the config at the db.config file in the same directory 
 config.read('db.config')
-config_nova = {
-  'user': config.get('nova', 'user'),
-  'passwd': config.get('nova', 'passwd'),
-  'host': config.get('nova', 'host'),
-  'db': config.get('nova', 'db'),
-}
-
-config_pdns = {
-  'user': config.get('pdns', 'user'),
-  'passwd': config.get('pdns', 'passwd'),
-  'host': config.get('pdns', 'host'),
-  'db': config.get('pdns', 'db'),
-}
+config_nova = dict(config.items("nova"))
+config_pdns = dict(config.items("pdns"))
 
 query = ("""select
 i.id
@@ -58,6 +49,7 @@ epg_debug = False
 if not epg_debug : print "["+str(datetime.now())+"] : Debug set to false at /home/epg/bin/epg-pdns-03/update.pdns.v.0.3.py"
 
 try:
+	#cnx_nova = MySQLdb.connect(**config_nova)
 	cnx_nova = MySQLdb.connect(**config_nova)
 	# open nova cursor
 	cursor_nova = cnx_nova.cursor()
