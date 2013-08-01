@@ -7,6 +7,7 @@
  insert into domains (name,change_date,last_update) values ('openstack.hi.inet',unix_timestamp(now()),now());
  delete from records where name like '%in-addr.arpa' and name != '158.95.10.in-addr.arpa';
  insert into records (domain_id,name,type,content,ttl) values ((select id from domains where name = 'openstack.hi.inet' limit 1),'158.95.10.in-addr.arpa','SOA','openstack.hi.inet','120');
+
 """
 # ================================================================================================
 import MySQLdb
@@ -27,11 +28,6 @@ config_pdns = dict(config.items("pdns"))
 query = ("""select
 i.id
 , i.hostname
--- , i.host
--- , i.vm_state
--- , m.uuid
--- , f.id
--- , lower(f.address) as fixed_ip
 , lower(s.address) as floating_ip
 from
 instances i  left join instance_id_mappings m on i.id=m.id
