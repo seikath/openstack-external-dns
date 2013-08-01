@@ -41,11 +41,12 @@ where true
 -- and i.vm_state != 'deleted'
 and i.host is not null""")
 
+query_pdns_clean = ("delete from records where content = 'None';")
 
 debug = False
 #debug = True
 epg_debug = False
-# epg_debug = True
+epg_debug = True
 
 if not epg_debug : print "["+str(datetime.now())+"] : Debug set to false at " + os.path.abspath(__file__)
 
@@ -73,27 +74,38 @@ except Exception, e:
 	print "["+str(datetime.now())+"] : " + repr(e)
 	sys.exit (1)
 	
+	
+# general clean up 
+try:
+        cursor_pdns.execute(query_pdns_clean)
+        if epg_debug : print ("["+str(datetime.now())+"] : " + "Executed : " + query_pdns_clean) 
+except MySQLdb.Error, e:
+        print "["+str(datetime.now())+"] : " + "Error %d: %s" % (e.args[0], e.args[1])
+        sys.exit (1)
+		
+	
 # clean the old records 
 for (id,hostname,floating_ip) in cursor_nova:
-	# check if the IP is not null
+	
+	query_pdns_delete = (
+		"delete from records where name= '%s.openstack.hi.inet';"
+		)	
+	try:
+		cursor_pdns.execute(query_pdns_delete  % (hostname))
+		if epg_debug : print ("["+str(datetime.now())+"] : " + "Executed : " + query_pdns_delete % (hostname)) 
+	except MySQLdb.Error, e:
+		print "["+str(datetime.now())+"] : " + "Error %d: %s" % (e.args[0], e.args[1])
+		sys.exit (1)	
+	# check if the IP is not null	
 	try:
 		socket.inet_aton(floating_ip)
 		# assign the reverse IP 
 		reverse_ip = '.'.join(floating_ip.split('.')[::-1])
 		# construct the SQL
-		query_pdns_delete = (
-			"delete from records where name= '%s.openstack.hi.inet';"
-			)
 		query_pdns_delete_ptr_and_soa = (
 			"delete from records where name= '%s.in-addr.arpa';"
 			)			
 		# execute the SQL 
-		try:
-			cursor_pdns.execute(query_pdns_delete  % (hostname))
-			if epg_debug : print ("["+str(datetime.now())+"] : " + "Executed : " + query_pdns_delete % (hostname)) 
-		except MySQLdb.Error, e:
-			print "["+str(datetime.now())+"] : " + "Error %d: %s" % (e.args[0], e.args[1])
-			sys.exit (1)
 		try:
 			cursor_pdns.execute(query_pdns_delete_ptr_and_soa  % (reverse_ip))
 			if epg_debug : print ("["+str(datetime.now())+"] : " + "Executed : " + query_pdns_delete_ptr_and_soa % (reverse_ip))
