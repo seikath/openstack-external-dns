@@ -15,11 +15,12 @@ import sys
 from datetime import datetime
 import ConfigParser
 import os
-print os.path.basename(__file__)
+
 # CONFIGs, SQL etc ========= [ start ] 
 config = ConfigParser.SafeConfigParser()
 # get the config at the db.config file in the same directory 
-config.read('db.config')
+config.read(os.path.dirname(os.path.abspath(__file__))+'/db.config')
+# assing the db configs
 config_nova = dict(config.items("nova"))
 config_pdns = dict(config.items("pdns"))
 
@@ -46,7 +47,7 @@ debug = False
 epg_debug = False
 # epg_debug = True
 
-if not epg_debug : print "["+str(datetime.now())+"] : Debug set to false at /home/epg/bin/epg-pdns-03/update.pdns.v.0.3.py"
+if not epg_debug : print "["+str(datetime.now())+"] : Debug set to false at " + os.path.abspath(__file__)
 
 try:
 	#cnx_nova = MySQLdb.connect(**config_nova)
