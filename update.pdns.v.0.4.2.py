@@ -41,8 +41,6 @@ where true
 -- and i.vm_state != 'deleted'
 and i.host is not null""")
 
-query_pdns_clean = ("delete from records where content = 'None';")
-
 debug = False
 #debug = True
 epg_debug = False
@@ -75,18 +73,9 @@ except Exception, e:
 	sys.exit (1)
 	
 	
-# general clean up 
-try:
-        cursor_pdns.execute(query_pdns_clean)
-        if epg_debug : print ("["+str(datetime.now())+"] : " + "Executed : " + query_pdns_clean) 
-except MySQLdb.Error, e:
-        print "["+str(datetime.now())+"] : " + "Error %d: %s" % (e.args[0], e.args[1])
-        sys.exit (1)
-		
-	
 # clean the old records 
 for (id,hostname,floating_ip) in cursor_nova:
-	
+	# clean records 
 	query_pdns_delete = (
 		"delete from records where name= '%s.openstack.hi.inet';"
 		)	
@@ -95,27 +84,17 @@ for (id,hostname,floating_ip) in cursor_nova:
 		if epg_debug : print ("["+str(datetime.now())+"] : " + "Executed : " + query_pdns_delete % (hostname)) 
 	except MySQLdb.Error, e:
 		print "["+str(datetime.now())+"] : " + "Error %d: %s" % (e.args[0], e.args[1])
-		sys.exit (1)	
-	# check if the IP is not null	
+		sys.exit (1)
+	# clean TPRS
+	query_pdns_delete_ptr = (
+		"delete from records where content= '%s.openstack.hi.inet' and  name!='158.95.10.in-addr.arpa';"
+		)	
 	try:
-		socket.inet_aton(floating_ip)
-		# assign the reverse IP 
-		reverse_ip = '.'.join(floating_ip.split('.')[::-1])
-		# construct the SQL
-		query_pdns_delete_ptr_and_soa = (
-			"delete from records where name= '%s.in-addr.arpa';"
-			)			
-		# execute the SQL 
-		try:
-			cursor_pdns.execute(query_pdns_delete_ptr_and_soa  % (reverse_ip))
-			if epg_debug : print ("["+str(datetime.now())+"] : " + "Executed : " + query_pdns_delete_ptr_and_soa % (reverse_ip))
-		except MySQLdb.Error, e:
-			print "["+str(datetime.now())+"] : " + "Error %d: %s" % (e.args[0], e.args[1])
-			sys.exit (1)	
-	except socket.error : 
-		if debug : print ("["+str(datetime.now())+"] : " + "Skipping this one : {1}".format(floating_ip))
-	except TypeError : 
-		if debug : print ("["+str(datetime.now())+"] : " + "cursor_nova: Skipping this one due to Null values for hostname" + hostname)
+		cursor_pdns.execute(query_pdns_delete_ptr  % (hostname))
+		if epg_debug : print ("["+str(datetime.now())+"] : " + "Executed : " + query_pdns_delete_ptr % (hostname)) 
+	except MySQLdb.Error, e:
+		print "["+str(datetime.now())+"] : " + "Error %d: %s" % (e.args[0], e.args[1])
+		sys.exit (1)
 
 # inject the new ones 
 for (id,hostname,floating_ip) in cursor_nova:
