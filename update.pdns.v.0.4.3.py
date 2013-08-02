@@ -17,7 +17,7 @@ from datetime import datetime
 import ConfigParser
 import os
 
-# CONFIGs, SQL etc ========= [ start ] 
+# CONFIGs, SQL etc  [ start ] ================================================ [ start ] 
 config = ConfigParser.SafeConfigParser()
 # get the config at the db.config file in the same directory 
 config.read(os.path.dirname(os.path.abspath(__file__))+'/db.config')
@@ -41,6 +41,10 @@ debug = False
 #debug = True
 epg_debug = False
 #epg_debug = True
+epg_add_hi_inet_resolve = False
+#epg_add_hi_inet_resolve = True
+
+# CONFIGs, SQL etc [ stop ] ================================================ [ stop ] 
 
 if not epg_debug : print "["+str(datetime.now())+"] : Debug set to false at " + os.path.abspath(__file__)
 
@@ -71,7 +75,7 @@ except Exception, e:
 	
 # clean the old records 
 for (id,hostname,floating_ip) in cursor_nova:
-	# clean records 
+	# clean openstack records 
 	query_pdns_delete = (
 		"delete from records where name= '%s.openstack.hi.inet';"
 		)	
@@ -81,6 +85,17 @@ for (id,hostname,floating_ip) in cursor_nova:
 	except MySQLdb.Error, e:
 		print "["+str(datetime.now())+"] : " + "Error %d: %s" % (e.args[0], e.args[1])
 		sys.exit (1)
+	# clean hi.inet records 
+	# if epg_add_hi_inet_resolve:
+	query_pdns_delete_hi_inet = (
+	"delete from records where name= '%s.hi.inet';"
+	)	
+	try:
+		cursor_pdns.execute(query_pdns_delete_hi_inet  % (hostname))
+		if epg_debug : print ("["+str(datetime.now())+"] : " + "Executed : " + query_pdns_delete_hi_inet % (hostname)) 
+	except MySQLdb.Error, e:
+		print "["+str(datetime.now())+"] : " + "Error %d: %s" % (e.args[0], e.args[1])
+		sys.exit (1)	
 	# clean TPRS
 	query_pdns_delete_ptr = (
 		"delete from records where content= '%s.openstack.hi.inet' and  name!='158.95.10.in-addr.arpa';"
@@ -94,14 +109,6 @@ for (id,hostname,floating_ip) in cursor_nova:
 
 # inject the new ones 
 for (id,hostname,floating_ip) in cursor_nova:
-	query_pdns_insert = (
-	"insert into records (domain_id, name, content, type,ttl,prio,last_update) "
-	"VALUES (2,'%s.openstack.hi.inet','%s','A',120,NULL,now());"
-	)
-	query_pdns_insert_ptr = (
-	"insert into records (domain_id, name, content, type,ttl,prio,last_update,change_date) "
-	"VALUES (2,'%s.in-addr.arpa','%s.openstack.hi.inet','PTR',60,NULL,now(),unix_timestamp(now()));"
-	)	
 	# debug 
 	try:
 		socket.inet_aton(floating_ip)
@@ -109,18 +116,39 @@ for (id,hostname,floating_ip) in cursor_nova:
 		if debug : print ("["+str(datetime.now())+"] : " + "test : " + floating_ip)
 		# execute the SQL DNS
 		try:
+			query_pdns_insert = (
+			"insert into records (domain_id, name, content, type,ttl,prio,last_update) "
+			"VALUES (2,'%s.openstack.hi.inet','%s','A',120,NULL,now());"
+			)	
 			cursor_pdns.execute(query_pdns_insert  % (hostname,floating_ip))
 			if epg_debug : print ("["+str(datetime.now())+"] : " + "Executed : " + query_pdns_insert % (hostname,floating_ip))			
 		except MySQLdb.Error, e:
 			print "["+str(datetime.now())+"] : " + "Error %d: %s" % (e.args[0], e.args[1])
 			sys.exit (1)
+		# executre DNS reverse hi.inet PTR
+		if epg_add_hi_inet_resolve:
+			try:
+				query_pdns_hi_insert = (
+				"insert into records (domain_id, name, content, type,ttl,prio,last_update) "
+				"VALUES (2,'%s.hi.inet','%s','A',120,NULL,now());"
+				)	
+				cursor_pdns.execute(query_pdns_hi_insert  % (hostname,floating_ip))
+				if epg_debug : print ("["+str(datetime.now())+"] : " + "Executed : " + query_pdns_hi_insert % (hostname,floating_ip))			
+			except MySQLdb.Error, e:
+				print "["+str(datetime.now())+"] : " + "Error %d: %s" % (e.args[0], e.args[1])
+				sys.exit (1)	
 		# executre DNS reverse PTR
 		try:
+			query_pdns_insert_ptr = (
+			"insert into records (domain_id, name, content, type,ttl,prio,last_update,change_date) "
+			"VALUES (2,'%s.in-addr.arpa','%s.openstack.hi.inet','PTR',60,NULL,now(),unix_timestamp(now()));"
+			)
 			cursor_pdns.execute(query_pdns_insert_ptr  % (reverse_ip,hostname))
 			if epg_debug : print ("["+str(datetime.now())+"] : " + "Executed : " + query_pdns_insert_ptr % (reverse_ip,hostname))			
 		except MySQLdb.Error, e:
 			print "["+str(datetime.now())+"] : " + "Error %d: %s" % (e.args[0], e.args[1])
-			sys.exit (1)			
+			sys.exit (1)
+		# executre DNS reverse hi.inet PTR	
 	except socket.error : 
 		if debug : print ("["+str(datetime.now())+"] : " + "Skipping this one : {1}".format(query_pdns_insert))
 	except TypeError : 
