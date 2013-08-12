@@ -37,10 +37,9 @@ where true
 -- and i.vm_state != 'deleted'
 and i.host is not null""")
 
-debug = False
-#debug = True
-epg_debug = False
-#epg_debug = True
+
+debug = config.getboolean('general','debug')
+epg_debug = config.getboolean('general','epg_debug')
 
 if not epg_debug : print "["+str(datetime.now())+"] : Debug set to false at " + os.path.abspath(__file__)
 
