@@ -1,22 +1,6 @@
+# ecoding=utf8
 # ================================================================================================
-"""
-epg@epg-bind:[Thu Aug 01 11:36:18][~/bin/openstack-powerdns] [v6-Bash-Awk]$ scripts/dns_alta ep-rushstack.openstack.hi.inet. 10.95.158.4
-prereq nxrrset ep-rushstack.openstack.hi.inet. IN A
-update add ep-rushstack.openstack.hi.inet. 86400 IN A 10.95.158.4
-send
-update delete 4.158.95.10.in-addr.arpa. IN PTR
-update add 4.158.95.10.in-addr.arpa. 86400 IN PTR ep-rushstack.openstack.hi.inet.
-send
-root@epg-bind:[Thu Aug 01 13:20:25][/etc]$ dnssec-keygen -a HMAC-MD5 -b 512 -n HOST openstack.hi.inet 
-Kopenstack.hi.inet.+157+62199
--rw-------.  1 root root   229 Aug  1 13:26 Kopenstack.hi.inet.+157+62199.private
--rw-------.  1 root root   126 Aug  1 13:26 Kopenstack.hi.inet.+157+62199.key
-import paramiko
-ssh = paramiko.SSHClient()
-ssh.connect('127.0.0.1', username='jesse', 
-    password='lol')
-"""
-# ================================================================================================
+
 import MySQLdb
 import socket
 import sys
