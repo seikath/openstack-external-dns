@@ -2,14 +2,6 @@
 # vim: set fileencoding=utf8
 # -*- coding: utf8 -*-
 # ================================================================================================
-"""
- floating IP range : 10.95.158.0/24
- insert into domains (name,change_date,last_update) values ('openstack.hi.inet',unix_timestamp(now()),now());
- delete from records where name like '%in-addr.arpa' and name != '158.95.10.in-addr.arpa';
- insert into records (domain_id,name,type,content,ttl) values ((select id from domains where name = 'openstack.hi.inet' limit 1),'158.95.10.in-addr.arpa','SOA','openstack.hi.inet','120');
-
-"""
-# ================================================================================================
 import MySQLdb
 import socket
 import sys
